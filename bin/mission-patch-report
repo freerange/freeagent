@@ -2,8 +2,27 @@
 require 'bundler/setup'
 $LOAD_PATH.unshift(File.expand_path('../../lib', __FILE__))
 
+require 'optparse'
 require 'freeagent_api'
 require 'csv'
+
+script_name = File.basename($0)
+OptionParser.new do |parser|
+  parser.banner = <<EOS
+Usage: #{script_name} [options]
+
+Generates a report from FreeAgent listing all Mission Patch purchasers. This is
+achieved by finding all the unique contacts associated with invoices with a reference
+starting with "MISSIONPATCH". Prints CSV to stdout with one row per contact.
+
+Options:
+
+EOS
+  parser.on('-h', '--help', 'Prints this help') do
+    puts parser
+    exit
+  end
+end.parse!
 
 api = FreeagentAPI.new
 
@@ -13,6 +32,7 @@ contacts = api.get_resources('contacts', view: 'all')
 mp_contacts = mp_invoices.map(&:contact).uniq.map { |url| contacts.find { |c| c.url == url } }
 
 CSV($stdout, col_sep: "\t") do |csv|
+  csv << %w(edit_contact_url, contact_email, contact_charge_sales_tax)
   mp_contacts.each do |contact|
     contact_id = contact.url.split('/').last
     edit_contact_url = "https://freerange.freeagent.com/contacts/#{contact_id}/edit"
