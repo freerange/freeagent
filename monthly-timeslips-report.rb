@@ -9,7 +9,7 @@ month = reference_date.month
 from_date = Date.new(year, month, 1)
 to_date = Date.new(year, month, -1)
 
-@api = FreeagentAPI.new
+api = FreeagentAPI.new
 
 users = [
   OpenStruct.new(first_name: 'Ben', url: 'https://api.freeagent.com/v2/users/580257'),
@@ -20,10 +20,10 @@ users = [
 
 results = {}
 
-projects = @api.get_resources('projects', view: 'active')
+projects = api.get_resources('projects', view: 'active')
 projects.each do |project|
   results[project.name] = Hash[*users.map { |u| [u.first_name, 0] }.flatten]
-  timeslips = @api.get_resources('timeslips', project: project.url, from_date: from_date, to_date: to_date)
+  timeslips = api.get_resources('timeslips', project: project.url, from_date: from_date, to_date: to_date)
   timeslips.group_by(&:user).each do |user_url, ts|
     user = users.find { |u| u.url == user_url }
     total_hours = ts.inject(0) { |total, t| total + BigDecimal.new(t.hours) }

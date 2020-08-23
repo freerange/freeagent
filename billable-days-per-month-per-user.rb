@@ -2,7 +2,7 @@ require 'bundler/setup'
 require 'freeagent_api'
 require 'csv'
 
-@api = FreeagentAPI.new
+api = FreeagentAPI.new
 
 users = [
   OpenStruct.new(first_name: 'Ben', url: 'https://api.freeagent.com/v2/users/580257'),
@@ -24,7 +24,7 @@ while report_date < end_date do
   from_date = Date.new(year, month, 1)
   to_date = Date.new(year, month, -1)
 
-  timeslips = @api.get_resources('timeslips', from_date: from_date, to_date: to_date, reporting_type: 'billable')
+  timeslips = api.get_resources('timeslips', from_date: from_date, to_date: to_date, reporting_type: 'billable')
 
   results[month_key] = Hash[*users.map { |u| [u.first_name, 0] }.flatten]
   timeslips.group_by(&:user).each do |user_url, ts|

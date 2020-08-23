@@ -2,13 +2,13 @@ require 'bundler/setup'
 require 'freeagent_api'
 require 'csv'
 
-@api = FreeagentAPI.new
+api = FreeagentAPI.new
 
 number_of_months = Integer(ARGV[0]) rescue 1
 reference_date = Date.today << number_of_months
 
-projects = @api.get_resources('projects')
-tasks = @api.get_resources('tasks')
+projects = api.get_resources('projects')
+tasks = api.get_resources('tasks')
 
 results = {}
 
@@ -19,7 +19,7 @@ while reference_date < Date.today do
   from_date = Date.new(year, month, 1)
   to_date = Date.new(year, month, -1)
 
-  timeslips = @api.get_resources('timeslips', from_date: from_date, to_date: to_date, reporting_type: 'billable')
+  timeslips = api.get_resources('timeslips', from_date: from_date, to_date: to_date, reporting_type: 'billable')
 
   results[month_key] = timeslips.group_by(&:task).map do |task_url, ts|
     task = tasks.find { |t| t.url == task_url }
@@ -28,7 +28,7 @@ while reference_date < Date.today do
     project = projects.find { |p| p.url == project_url }
     next unless project
     contact_url = project.contact
-    contact = @api.get_resource('contact', contact_url)
+    contact = api.get_resource('contact', contact_url)
     [contact.organisation_name, project.name, task.name].join(' - ')
   end.compact.sort
 
