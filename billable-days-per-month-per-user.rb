@@ -35,15 +35,16 @@ users = [
   OpenStruct.new(first_name: 'James', url: 'https://api.freeagent.com/v2/users/7474'),
 ]
 
-number_of_months = Integer(ARGV[0]) rescue 1
-reference_date = Date.today << number_of_months
+start_date = Date.parse(ARGV[0]) rescue Date.today
+end_date = Date.parse(ARGV[1]) rescue Date.today
+report_date = start_date
 
 results = {}
 
-while reference_date < Date.today do
-  month_key = reference_date.strftime('%b %Y')
-  year = reference_date.year
-  month = reference_date.month
+while report_date < end_date do
+  month_key = report_date.strftime('%b %Y')
+  year = report_date.year
+  month = report_date.month
   from_date = Date.new(year, month, 1)
   to_date = Date.new(year, month, -1)
 
@@ -57,7 +58,7 @@ while reference_date < Date.today do
     results[month_key][user.first_name] = total_days
   end
 
-  reference_date = reference_date >> 1
+  report_date = report_date >> 1
 end
 
 user_keys = users.map(&:first_name)
