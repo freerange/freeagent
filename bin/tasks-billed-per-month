@@ -12,9 +12,9 @@ OptionParser.new do |parser|
   parser.banner = <<EOS
 Usage: #{script_name} [options]
 
-Generates a report from FreeAgent listing the projects with billable time
+Generates a report from FreeAgent listing the tasks with billable time
 recorded for the given month. Prints CSV to stdout with one row per combination
-of month and project.
+of month and task.
 
 Options:
 
@@ -62,12 +62,12 @@ end
 
 CSV($stdout, col_sep: "\t") do |csv|
   csv << ['Month', 'Project']
-  results.each do |month_key, project_names|
-    if project_names.empty?
+  results.each do |month_key, task_names|
+    if task_names.empty?
       csv << [month_key]
     else
-      project_names.each do |project_name|
-        csv << [month_key, project_name]
+      task_names.each do |task_name|
+        csv << [month_key, task_name]
       end
     end
   end
