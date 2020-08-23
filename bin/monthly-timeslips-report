@@ -2,11 +2,41 @@
 require 'bundler/setup'
 $LOAD_PATH.unshift(File.expand_path('../../lib', __FILE__))
 
+require 'optparse'
+require 'optparse/date'
 require 'freeagent_api'
 require 'user'
 require 'csv'
 
-reference_date = Date.parse(ARGV[0]) rescue Date.today << 1
+script_name = File.basename($0)
+reference_date = Date.today << 1
+OptionParser.new do |parser|
+  parser.banner = <<EOS
+Usage: #{script_name} [options]
+
+Generates a report of the time recorded against all "active" projects in
+FreeAgent for the month in which the reference data appears. By default this
+will be last month. Prints CSV to stdout with one row per combination of project
+and user where the user has billed some time to the project. Time is recorded in
+FreeAgent in hours; this script assumes 1 day = 8 hours.
+
+Note that this script was originally developed for the "Record the time worked
+per project" Harmonia task [1].
+
+[1]: https://github.com/freerange/business/wiki/Record-the-time-worked-per-project
+
+Options:
+
+EOS
+  parser.on('-r', '--reference-date [DATE]', Date, 'Defaults to 1 month ago') do |date|
+    reference_date = date
+  end
+  parser.on('-h', '--help', 'Prints this help') do
+    puts parser
+    exit
+  end
+end.parse!
+
 year = reference_date.year
 month = reference_date.month
 

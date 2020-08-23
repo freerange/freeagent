@@ -20,24 +20,3 @@ CLIENT_SECRET=<OAuth-client-secret>
 * Also the access token has a refresh token which is valid for a longer period. If the access token has expired it will automatically be refreshed, so you still won't need to sign in.
 * If the refresh token has expired, you'll need to delete the `access-token.json` file, run the script again and sign in again.
 * You can see the apps authorized by the currently logged in user via the FreeAgent settings: https://freerange.freeagent.com/settings/authorized_apps.
-
-## Monthly Timeslips Report
-
-See https://github.com/freerange/business/wiki/Record-the-time-worked-per-project.
-
-By default this will generate a CSV report for _last_ month which is probably what you want if you are working on the Harmonia task:
-
-```
-bin/monthly-timeslips-report
-```
-
-However, you can supply a reference date as a command-line argument in order to generate the report for another month:
-
-```
-bin/monthly-timeslips-report.rb 2016-01-01
-```
-
-* Running this script reports the time recorded against all "active" projects for two hard-coded users (James M & Chris R).
-* The script does not attempt to look-up the users via the API, because this requires more powerful permissions.
-* For ease of integration with the existing spreadsheet, the time for each project is calculated in fractions of days.
-* The format of the output is: month/year, project name, person's first name, time worked (in days).
