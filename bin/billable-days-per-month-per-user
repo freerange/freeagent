@@ -2,16 +2,42 @@
 require 'bundler/setup'
 $LOAD_PATH.unshift(File.expand_path('../../lib', __FILE__))
 
+require 'optparse'
+require 'optparse/date'
 require 'freeagent_api'
 require 'user'
 require 'csv'
+
+script_name = File.basename($0)
+start_date = Date.today
+end_date = Date.today
+OptionParser.new do |parser|
+  parser.banner = <<EOS
+Usage: #{script_name} [options]
+
+Generates a report from FreeAgent of billable days per user for each month.
+Prints CSV to stdout with one row per month. Time is recorded in FreeAgent in
+hours; this script assumes 1 day = 8 hours.
+
+Options:
+
+EOS
+  parser.on('-s', '--start-date [DATE]', Date, 'Defaults to today') do |date|
+    start_date = date
+  end
+  parser.on('-e', '--end-date [DATE]', Date, 'Defaults to today') do |date|
+    end_date = date
+  end
+  parser.on('-h', '--help', 'Prints this help') do
+    puts parser
+    exit
+  end
+end.parse!
 
 api = FreeagentAPI.new
 
 users = User.members
 
-start_date = Date.parse(ARGV[0]) rescue Date.today
-end_date = Date.parse(ARGV[1]) rescue Date.today
 report_date = start_date
 
 results = {}
