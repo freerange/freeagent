@@ -31,6 +31,7 @@ projects.each do |project|
 end
 
 CSV($stdout, col_sep: "\t") do |csv|
+  csv << %w(month project user days)
   results.each do |project_name, hours_per_user|
     hours_per_user.each do |first_name, hours|
       next if hours.zero?
