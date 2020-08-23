@@ -1,9 +1,6 @@
 require 'bundler/setup'
-require 'oauth2'
-require 'dotenv'
+require 'freeagent_api'
 require 'csv'
-
-Dotenv.load
 
 reference_date = Date.parse(ARGV[0]) rescue Date.today << 1
 year = reference_date.year
@@ -12,16 +9,7 @@ month = reference_date.month
 from_date = Date.new(year, month, 1)
 to_date = Date.new(year, month, -1)
 
-client_id = ENV.fetch('CLIENT_ID')
-client_secret = ENV.fetch('CLIENT_SECRET')
-site = 'https://api.freeagent.com/v2/'
-
-client = OAuth2::Client.new(client_id, client_secret, site: site)
-
-access_token = ENV.fetch('ACCESS_TOKEN')
-refresh_token = ENV.fetch('REFRESH_TOKEN')
-
-@api = OAuth2::AccessToken.new(client, access_token, refresh_token: refresh_token)
+@api = FreeagentAPI.new
 
 MAXIMUM_RESULTS_PER_PAGE = 100
 

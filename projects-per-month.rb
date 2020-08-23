@@ -1,20 +1,8 @@
 require 'bundler/setup'
-require 'oauth2'
-require 'dotenv'
+require 'freeagent_api'
 require 'csv'
 
-Dotenv.load
-
-client_id = ENV.fetch('CLIENT_ID')
-client_secret = ENV.fetch('CLIENT_SECRET')
-site = 'https://api.freeagent.com/v2/'
-
-client = OAuth2::Client.new(client_id, client_secret, site: site)
-
-access_token = ENV.fetch('ACCESS_TOKEN')
-refresh_token = ENV.fetch('REFRESH_TOKEN')
-
-@api = OAuth2::AccessToken.new(client, access_token, refresh_token: refresh_token)
+@api = FreeagentAPI.new
 
 MAXIMUM_RESULTS_PER_PAGE = 100
 

@@ -10,26 +10,16 @@ Ruby scripts for querying/modifying the data in a FreeAgent account.
 ```
 CLIENT_ID=<OAuth-client-ID>
 CLIENT_SECRET=<OAuth-client-secret>
-REFRESH_TOKEN=<OAuth-refresh-token>
-ACCESS_TOKEN=<OAuth-access-token>
 ```
 
 * You should be able to set these environment variables using the values stored in the secure note named "FreeAgent API - Go Free Range app" in the shared 1Password vault.
-* The first pair of (client-related) values refer to the "Go Free Range" app (visit "App URL" in the secure note for more details).
-* The second pair of (user-related) values refer to the "FreeAgent Reporting" user whose credentials are stored in the shared 1Password vault.
-* It should be possible to just use the latter tokens without any further authorization, because the refresh token should never expire. However, if it turns out that this doesn't work then follow the instructions in the "Authorization" section below.
-* The permissions granted to the scripts in this project are those assigned to the "FreeAgent Reporting" user mentioned above. You might need to change the permissions if your script needs access to different parts of the FreeAgent API.
+* These values refer to the "Go Free Range" app (visit "App URL" in the secure note for more details).
+* The first time you run one of the scripts, it will ask you to sign in to FreeAgent in a browser and authorize the application.
+* The details of the access token thus obtained are saved to a file, `access-token.json`.
+* The access token is usually valid for 1 hour. If you run one of the scripts within this time, you won't need to sign in again.
+* Also the access token has a refresh token which is valid for a longer period. If the access token has expired it will automatically be refreshed, so you still won't need to sign in.
+* If the refresh token has expired, you'll need to delete the `access-token.json` file, run the script again and sign in again.
 * You can see the apps authorized by the currently logged in user via the FreeAgent settings: https://freerange.freeagent.com/settings/authorized_apps.
-
-### Authorization
-
-* Visit the "Authorization URL" stored in the secure note named "FreeAgent API - Go Free Range app" in the shared 1Password vault.
-* In "Step 1" on the left-hand side set the "Input your own scopes" text field to any string and click the "Authorize APIs" button.
-* Login as the "FreeAgent Reporting" user and approve the "Go Free Range" app.
-* In "Step 2" you should now have an "Authorization code".
-* Click the "Exchange authorization code for tokens" button.
-* This should obtain a "Refresh token" and an "Access token" and take you to "Step 3".
-* You'll need to select "Step 2" again to see these values.
 
 ## Monthly Timeslips Report
 
