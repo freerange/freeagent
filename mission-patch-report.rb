@@ -36,7 +36,8 @@ end
 
 invoices = get_resources('invoices', view: 'all')
 mp_invoices = invoices.select { |i| i.reference.match(/^MISSIONPATCH/) }
-mp_contacts = mp_invoices.map(&:contact).uniq.map { |url| OpenStruct.new(@api.get(url).parsed['contact']) }
+contacts = get_resources('contacts', view: 'all')
+mp_contacts = mp_invoices.map(&:contact).uniq.map { |url| contacts.find { |c| c.url == url } }
 
 CSV($stdout, col_sep: "\t") do |csv|
   mp_contacts.each do |contact|
