@@ -6,6 +6,8 @@ require 'oauth2_callback_monitor'
 Dotenv.load
 
 class FreeagentAPI
+  MAXIMUM_RESULTS_PER_PAGE = 100
+
   def initialize
     client_id = ENV.fetch('CLIENT_ID')
     client_secret = ENV.fetch('CLIENT_SECRET')
@@ -15,13 +17,41 @@ class FreeagentAPI
       authorize_url: '/v2/approve_app',
       token_url: '/v2/token_endpoint'
     })
+    @resources = {}
   end
+
+  def get_resource(name, url)
+    if (resource = @resources[url])
+      resource
+    else
+      response = get(url)
+      resource = OpenStruct.new(response.parsed[name])
+      @resources[url] = resource
+    end
+  end
+
+  def get_resources(name, filters = {})
+    page = 1
+    resources = []
+    filters[:per_page] = MAXIMUM_RESULTS_PER_PAGE
+    loop do
+      uri = URI(name)
+      filters[:page] = page
+      uri.query = URI.encode_www_form(filters)
+      response = get(uri.to_s)
+      next_resources = response.parsed[name].map { |r| OpenStruct.new(r) }
+      resources += next_resources
+      break unless next_resources.length == filters[:per_page]
+      page += 1
+    end
+    resources
+  end
+
+  private
 
   def get(path, opts = {}, &block)
     access_token.get(path, opts = {}, &block)
   end
-
-  private
 
   def access_token
     access_token = load_access_token

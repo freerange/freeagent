@@ -11,18 +11,6 @@ to_date = Date.new(year, month, -1)
 
 @api = FreeagentAPI.new
 
-MAXIMUM_RESULTS_PER_PAGE = 100
-
-def get_resources(name, filters = {})
-  uri = URI(name)
-  filters[:per_page] ||= MAXIMUM_RESULTS_PER_PAGE
-  uri.query = URI.encode_www_form(filters)
-  response = @api.get(uri.to_s)
-  resources = response.parsed[name].map { |r| OpenStruct.new(r) }
-  raise 'Multiple pages of results' if resources.length == filters[:per_page]
-  resources
-end
-
 users = [
   OpenStruct.new(first_name: 'Ben', url: 'https://api.freeagent.com/v2/users/580257'),
   OpenStruct.new(first_name: 'Chris L', url: 'https://api.freeagent.com/v2/users/485461'),
@@ -32,10 +20,10 @@ users = [
 
 results = {}
 
-projects = get_resources('projects', view: 'active')
+projects = @api.get_resources('projects', view: 'active')
 projects.each do |project|
   results[project.name] = Hash[*users.map { |u| [u.first_name, 0] }.flatten]
-  timeslips = get_resources('timeslips', project: project.url, from_date: from_date, to_date: to_date)
+  timeslips = @api.get_resources('timeslips', project: project.url, from_date: from_date, to_date: to_date)
   timeslips.group_by(&:user).each do |user_url, ts|
     user = users.find { |u| u.url == user_url }
     total_hours = ts.inject(0) { |total, t| total + BigDecimal.new(t.hours) }

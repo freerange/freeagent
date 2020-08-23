@@ -4,35 +4,11 @@ require 'csv'
 
 @api = FreeagentAPI.new
 
-MAXIMUM_RESULTS_PER_PAGE = 100
-
-def get_resources(name, filters = {})
-  uri = URI(name)
-  filters[:per_page] ||= MAXIMUM_RESULTS_PER_PAGE
-  uri.query = URI.encode_www_form(filters)
-  response = @api.get(uri.to_s)
-  resources = response.parsed[name].map { |r| OpenStruct.new(r) }
-  raise 'Multiple pages of results' if resources.length == filters[:per_page]
-  resources
-end
-
-@resources = {}
-
-def get_resource(name, url)
-  if (resource = @resources[url])
-    resource
-  else
-    response = @api.get(url)
-    resource = OpenStruct.new(response.parsed[name])
-    @resources[url] = resource
-  end
-end
-
 number_of_months = Integer(ARGV[0]) rescue 1
 reference_date = Date.today << number_of_months
 
-projects = get_resources('projects')
-tasks = get_resources('tasks')
+projects = @api.get_resources('projects')
+tasks = @api.get_resources('tasks')
 
 results = {}
 
@@ -43,7 +19,7 @@ while reference_date < Date.today do
   from_date = Date.new(year, month, 1)
   to_date = Date.new(year, month, -1)
 
-  timeslips = get_resources('timeslips', from_date: from_date, to_date: to_date, reporting_type: 'billable')
+  timeslips = @api.get_resources('timeslips', from_date: from_date, to_date: to_date, reporting_type: 'billable')
 
   results[month_key] = timeslips.group_by(&:task).map do |task_url, ts|
     task = tasks.find { |t| t.url == task_url }
@@ -52,7 +28,7 @@ while reference_date < Date.today do
     project = projects.find { |p| p.url == project_url }
     next unless project
     contact_url = project.contact
-    contact = get_resource('contact', contact_url)
+    contact = @api.get_resource('contact', contact_url)
     [contact.organisation_name, project.name, task.name].join(' - ')
   end.compact.sort
 

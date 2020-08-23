@@ -4,18 +4,6 @@ require 'csv'
 
 @api = FreeagentAPI.new
 
-MAXIMUM_RESULTS_PER_PAGE = 100
-
-def get_resources(name, filters = {})
-  uri = URI(name)
-  filters[:per_page] ||= MAXIMUM_RESULTS_PER_PAGE
-  uri.query = URI.encode_www_form(filters)
-  response = @api.get(uri.to_s)
-  resources = response.parsed[name].map { |r| OpenStruct.new(r) }
-  raise 'Multiple pages of results' if resources.length == filters[:per_page]
-  resources
-end
-
 users = [
   OpenStruct.new(first_name: 'Ben', url: 'https://api.freeagent.com/v2/users/580257'),
   OpenStruct.new(first_name: 'Chris L', url: 'https://api.freeagent.com/v2/users/485461'),
@@ -36,7 +24,7 @@ while report_date < end_date do
   from_date = Date.new(year, month, 1)
   to_date = Date.new(year, month, -1)
 
-  timeslips = get_resources('timeslips', from_date: from_date, to_date: to_date, reporting_type: 'billable')
+  timeslips = @api.get_resources('timeslips', from_date: from_date, to_date: to_date, reporting_type: 'billable')
 
   results[month_key] = Hash[*users.map { |u| [u.first_name, 0] }.flatten]
   timeslips.group_by(&:user).each do |user_url, ts|
