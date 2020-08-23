@@ -28,13 +28,13 @@ See https://github.com/freerange/business/wiki/Record-the-time-worked-per-projec
 By default this will generate a CSV report for _last_ month which is probably what you want if you are working on the Harmonia task:
 
 ```
-bundle exec ruby monthly-timeslips-report.rb
+bin/monthly-timeslips-report
 ```
 
 However, you can supply a reference date as a command-line argument in order to generate the report for another month:
 
 ```
-bundle exec ruby monthly-timeslips-report.rb 2016-01-01
+bin/monthly-timeslips-report.rb 2016-01-01
 ```
 
 * Running this script reports the time recorded against all "active" projects for two hard-coded users (James M & Chris R).
