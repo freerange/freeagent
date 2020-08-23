@@ -34,6 +34,7 @@ CSV($stdout, col_sep: "\t") do |csv|
   results.each do |project_name, hours_per_user|
     hours_per_user.each do |first_name, hours|
       csv << [from_date.strftime('%B %Y'), project_name, first_name, hours.to_f/24]
+      csv << [from_date.strftime('%B %Y'), project_name, first_name, hours.to_f/8]
     end
   end
 end
