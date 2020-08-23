@@ -2,12 +2,34 @@
 require 'bundler/setup'
 $LOAD_PATH.unshift(File.expand_path('../../lib', __FILE__))
 
+require 'optparse'
 require 'freeagent_api'
 require 'csv'
 
+script_name = File.basename($0)
+number_of_months = 1
+OptionParser.new do |parser|
+  parser.banner = <<EOS
+Usage: #{script_name} [options]
+
+Generates a report from FreeAgent listing the projects with billable time
+recorded for the given month. Prints CSV to stdout with one row per combination
+of month and project.
+
+Options:
+
+EOS
+  parser.on('-m', '--number-of-months [INTEGER]', OptionParser::DecimalInteger, 'Defaults to 1') do |number|
+    number_of_months = number
+  end
+  parser.on('-h', '--help', 'Prints this help') do
+    puts parser
+    exit
+  end
+end.parse!
+
 api = FreeagentAPI.new
 
-number_of_months = Integer(ARGV[0]) rescue 1
 reference_date = Date.today << number_of_months
 
 projects = api.get_resources('projects')
