@@ -44,7 +44,7 @@ while reference_date < Date.today do
   from_date = Date.new(year, month, 1)
   to_date = Date.new(year, month, -1)
 
-  timeslips = api.get_resources('timeslips', from_date: from_date, to_date: to_date, reporting_type: 'billable')
+  timeslips = api.get_resources('timeslips', from_date: from_date, to_date: to_date)
 
   results[month_key] = timeslips.group_by(&:task).map do |task_url, ts|
     task = tasks.find { |t| t.url == task_url }
