@@ -1,0 +1,78 @@
+#!/usr/bin/env ruby
+require 'bundler/setup'
+$LOAD_PATH.unshift(File.expand_path('../../lib', __FILE__))
+
+require 'optparse'
+require 'optparse/date'
+require 'freeagent_api'
+require 'user'
+require 'csv'
+
+script_name = File.basename($0)
+reference_date = Date.today << 1
+OptionParser.new do |parser|
+  parser.banner = <<EOS
+Usage: #{script_name} [options]
+
+Generates a report from FreeAgent of days per organisation, project & task
+broken down by user. Prints CSV to stdout with one row per combination of
+organisation, project & task, with a column for each user. Time is recorded in
+FreeAgent in hours; this script assumes 1 day = 8 hours.
+
+Options:
+
+EOS
+  parser.on('-r', '--reference-date [DATE]', Date, 'Defaults to 1 month ago') do |date|
+    reference_date = date
+  end
+  parser.on('-h', '--help', 'Prints this help') do
+    puts parser
+    exit
+  end
+end.parse!
+
+year = reference_date.year
+month = reference_date.month
+
+from_date = Date.new(year, month, 1)
+to_date = Date.new(year, month, -1)
+
+api = FreeagentAPI.new
+
+users = User.members
+
+timeslips = api.get_resources('timeslips', from_date: from_date, to_date: to_date, nested: true)
+results = timeslips
+  .group_by { |timeslip| timeslip.project.contact }
+  .transform_values do |timeslips_per_contact|
+    timeslips_per_contact
+      .group_by(&:project)
+      .transform_values do |timeslips_per_project|
+        timeslips_per_project.group_by(&:task)
+        .transform_values do |timeslips_per_task|
+          timeslips_per_task.group_by { |t| t.user.url }
+          .transform_values do |timeslips_per_user|
+            timeslips_per_user
+              .sum { |t| BigDecimal.new(t.hours) }
+              .to_f / 8
+          end
+        end
+      end
+  end
+
+CSV($stdout, col_sep: "\t") do |csv|
+  csv << %w(month organisation project task) + users.map(&:first_name)
+  results.each do |contact, days_per_contact|
+    days_per_contact.each do |project, days_per_project|
+      days_per_project.each do |task, days_per_task|
+        csv << [
+          from_date.strftime('%B %Y'),
+          contact.organisation_name,
+          project.name,
+          task.name,
+          *days_per_task.values_at(*users.map(&:url)).map { |d| d && d.round(1) }
+        ]
+      end
+    end
+  end
+end
