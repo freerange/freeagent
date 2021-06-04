@@ -20,12 +20,20 @@ class FreeagentAPI
     @resources = {}
   end
 
+  def build_resource(attributes)
+    OpenStruct.new(
+      attributes.transform_values do |value|
+        value.is_a?(Hash) ? build_resource(value) : value
+      end
+    )
+  end
+
   def get_resource(name, url)
     if (resource = @resources[url])
       resource
     else
       response = get(url)
-      resource = OpenStruct.new(response.parsed[name])
+      resource = build_resource(response.parsed[name])
       @resources[url] = resource
     end
   end
@@ -39,7 +47,9 @@ class FreeagentAPI
       filters[:page] = page
       uri.query = URI.encode_www_form(filters)
       response = get(uri.to_s)
-      next_resources = response.parsed[name].map { |r| OpenStruct.new(r) }
+      next_resources = response.parsed[name].map do |attributes|
+        build_resource(attributes)
+      end
       resources += next_resources
       break unless next_resources.length == filters[:per_page]
       page += 1
