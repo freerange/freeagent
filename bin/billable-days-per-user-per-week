@@ -16,7 +16,7 @@ OptionParser.new do |parser|
 Usage: #{script_name} [options]
 
 Generates a report from FreeAgent of billable days per user per week. Prints
-CSV to stdout with one row per month. Time is recorded in FreeAgent in hours;
+CSV to stdout with one row per week. Time is recorded in FreeAgent in hours;
 this script assumes 1 day = 8 hours.
 
 Options:
