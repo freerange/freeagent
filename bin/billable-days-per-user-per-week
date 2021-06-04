@@ -15,9 +15,9 @@ OptionParser.new do |parser|
   parser.banner = <<EOS
 Usage: #{script_name} [options]
 
-Generates a report from FreeAgent of billable days per user for each month.
-Prints CSV to stdout with one row per month. Time is recorded in FreeAgent in
-hours; this script assumes 1 day = 8 hours.
+Generates a report from FreeAgent of billable days per user per week. Prints
+CSV to stdout with one row per month. Time is recorded in FreeAgent in hours;
+this script assumes 1 day = 8 hours.
 
 Options:
 
@@ -43,13 +43,13 @@ report_date = start_date
 results = {}
 
 while report_date < end_date do
-  month_key = report_date.strftime('%b %Y')
-  year = report_date.year
-  month = report_date.month
-  from_date = Date.new(year, month, 1)
-  to_date = Date.new(year, month, -1)
+  cwyear = report_date.cwyear
+  cweek = report_date.cweek
+  from_date = Date.commercial(cwyear, cweek, 1)
+  to_date = Date.commercial(cwyear, cweek, 7)
+  week_key = from_date.strftime('%d %b %Y')
 
-  results[month_key] = users.each.with_object({}) do |user, hash|
+  results[week_key] = users.each.with_object({}) do |user, hash|
     timeslips = api.get_resources('timeslips', user: user.url, from_date: from_date, to_date: to_date, nested: true)
     timeslips.reject! { |t| !t['task']['is_billable'] }
     total_days = timeslips.sum { |t| BigDecimal.new(t.hours) / BigDecimal.new(8) }
@@ -57,13 +57,13 @@ while report_date < end_date do
     hash
   end
 
-  report_date = report_date >> 1
+  report_date = report_date + 7
 end
 
 user_keys = users.map(&:first_name)
 CSV($stdout, col_sep: "\t") do |csv|
   csv << ['Month', *user_keys]
-  results.each do |month_key, days_per_user|
-    csv << [month_key, *days_per_user.values_at(*user_keys).map(&:to_f)]
+  results.each do |week_key, days_per_user|
+    csv << [week_key, *days_per_user.values_at(*user_keys).map(&:to_f)]
   end
 end
