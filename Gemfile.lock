@@ -1,7 +1,7 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    dotenv (2.1.1)
+    dotenv (2.8.0)
     faraday (1.0.1)
       multipart-post (>= 1.2, < 3)
     jwt (2.2.2)
